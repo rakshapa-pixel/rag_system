@@ -1,0 +1,51 @@
+# ─── Environment / Secrets ────────────────────────────────────────
+.env
+frontend/.env
+
+# ─── Python ───────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+
+# ─── Virtual Environments ─────────────────────────────────────────
+rag-env/
+venv/
+.venv/
+env/
+
+# ─── Database ─────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# ─── ChromaDB local storage ───────────────────────────────────────
+chroma_db/
+
+# ─── Node / Frontend ──────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ─── Uploads / Temp files ─────────────────────────────────────────
+uploads/
+tmp/
+
+# ─── IDE / Editor ─────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ─── OS ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Claude Code (local session settings) ─────────────────────────
+.claude/settings.local.json
