@@ -36,7 +36,9 @@ class Config:
     SQLALCHEMY_DATABASE_URI = _resolve_db_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    SESSION_COOKIE_SAMESITE = "Lax"
+    # Cross-domain in production (Vercel + Render): SameSite=None requires Secure
+    SESSION_COOKIE_SAMESITE = "None" if os.environ.get("PRODUCTION") else "Lax"
+    SESSION_COOKIE_SECURE = bool(os.environ.get("PRODUCTION"))
     SESSION_COOKIE_HTTPONLY = True
 
     CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(",")
