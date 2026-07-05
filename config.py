@@ -41,8 +41,10 @@ class Config:
     SQLALCHEMY_DATABASE_URI = _resolve_db_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    SESSION_COOKIE_SAMESITE = "Lax"
-    SESSION_COOKIE_SECURE = _PRODUCTION   # HTTPS only in production
+    # Cross-domain in production (frontend and backend on different subdomains)
+    # SameSite=None requires Secure=True — both are satisfied on Render (HTTPS)
+    SESSION_COOKIE_SAMESITE = "None" if _PRODUCTION else "Lax"
+    SESSION_COOKIE_SECURE = _PRODUCTION
     SESSION_COOKIE_HTTPONLY = True
 
     CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(",")
