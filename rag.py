@@ -3,8 +3,9 @@ import chromadb
 import pypdf
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
@@ -14,41 +15,28 @@ EMBED_MODEL = "all-MiniLM-L6-v2"
 GEMINI_MODEL = "gemini-2.5-flash"
 INGEST_BATCH_SIZE = 500
 
-# Cached client — cloud connection tested only once per process lifetime
 _chroma_client = None
 
 
 def _get_chroma_client():
-    """Return a TryChroma cloud client if credentials are valid, local PersistentClient otherwise."""
     global _chroma_client
     if _chroma_client is not None:
         return _chroma_client
 
     if os.environ.get("CHROMA_API_KEY"):
         try:
-            client = chromadb.CloudClient()  # reads CHROMA_TENANT, CHROMA_DATABASE, CHROMA_API_KEY from env
-            client.heartbeat()               # verifies the key is accepted
+            client = chromadb.CloudClient()
+            client.heartbeat()
             _chroma_client = client
             print("✓ Connected to TryChroma Cloud")
         except Exception as e:
-            if os.environ.get("PRODUCTION"):
-                raise RuntimeError(f"TryChroma is required in production but failed: {e}")
             print(f"\n⚠️  TryChroma Cloud connection failed: {e}")
-            print("   Falling back to local ChromaDB for now.\n")
+            print("   Falling back to local ChromaDB.\n")
             _chroma_client = chromadb.PersistentClient(path=CHROMA_LOCAL_DIR)
     else:
-        if os.environ.get("PRODUCTION"):
-            raise RuntimeError("CHROMA_API_KEY is required in production")
         _chroma_client = chromadb.PersistentClient(path=CHROMA_LOCAL_DIR)
 
     return _chroma_client
-
-
-def _get_embeddings():
-    return GoogleGenerativeAIEmbeddings(
-        model=EMBED_MODEL,
-        google_api_key=os.environ.get("GEMINI_KEY"),
-    )
 
 
 def user_collection_name(user_id) -> str:
@@ -56,7 +44,6 @@ def user_collection_name(user_id) -> str:
 
 
 def collection_has_data(user_id) -> bool:
-    """Return True only if this user's collection exists and contains at least one chunk."""
     try:
         client = _get_chroma_client()
         col = client.get_collection(user_collection_name(user_id))
@@ -96,7 +83,6 @@ def load_and_chunk(file_path: str, chunk_size: int = 1000, chunk_overlap: int = 
 
 
 def clear_vectorstore(user_id):
-    """Delete the user's collection so a fresh ingest starts clean."""
     client = _get_chroma_client()
     try:
         client.delete_collection(user_collection_name(user_id))
@@ -105,13 +91,11 @@ def clear_vectorstore(user_id):
 
 
 def build_vectorstore(chunks, user_id):
-    """Create (or recreate) the user's collection and ingest all chunks in batches."""
     client = _get_chroma_client()
-    embeddings = _get_embeddings()
+    embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
     collection_name = user_collection_name(user_id)
     total = len(chunks)
 
-    # First batch initialises the collection
     first_batch = chunks[:INGEST_BATCH_SIZE]
     vectorstore = Chroma.from_documents(
         documents=first_batch,
@@ -122,9 +106,8 @@ def build_vectorstore(chunks, user_id):
     stored = len(first_batch)
     print(f"  Stored {stored}/{total} chunks...")
 
-    # Remaining batches added incrementally to avoid OOM on large PDFs
     for i in range(INGEST_BATCH_SIZE, total, INGEST_BATCH_SIZE):
-        batch = chunks[i : i + INGEST_BATCH_SIZE]
+        batch = chunks[i: i + INGEST_BATCH_SIZE]
         vectorstore.add_documents(batch)
         stored += len(batch)
         print(f"  Stored {stored}/{total} chunks...")
@@ -134,9 +117,8 @@ def build_vectorstore(chunks, user_id):
 
 
 def load_vectorstore(user_id):
-    """Load an existing collection for a user."""
     client = _get_chroma_client()
-    embeddings = _get_embeddings()
+    embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
     return Chroma(
         client=client,
         collection_name=user_collection_name(user_id),
