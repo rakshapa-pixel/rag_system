@@ -23,3 +23,6 @@ chromadb==1.5.9
 
 # Schemas
 marshmallow==4.3.0
+
+langchain-huggingface==0.1.2
+sentence-transformers==3.0.1
