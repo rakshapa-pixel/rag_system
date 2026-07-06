@@ -10,7 +10,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
 CHROMA_LOCAL_DIR = "/tmp/chroma_db"
-EMBED_MODEL = "models/text-embedding-004"
+EMBED_MODEL = "all-MiniLM-L6-v2"
 GEMINI_MODEL = "gemini-2.5-flash"
 INGEST_BATCH_SIZE = 500
 
