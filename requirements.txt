@@ -1,27 +1,27 @@
 # Web framework
-flask==3.1.3
-gunicorn==23.0.0
-flask-cors==6.0.5
-flask-sqlalchemy==3.1.1
-python-dotenv==1.2.2
-werkzeug>=3.0
+flask
+gunicorn
+flask-cors
+flask-sqlalchemy
+python-dotenv
+werkzeug
 
 # Database
-psycopg2-binary==2.9.12
+psycopg2-binary
 
 # OAuth
-authlib==1.7.2
+authlib
 
 # RAG pipeline
-pypdf==6.14.2
-langchain==1.3.11
-langchain-core==1.4.8
-langchain-text-splitters==1.1.2
-langchain-chroma==1.1.0
-langchain-google-genai==4.2.6
-chromadb==1.5.9
-langchain-huggingface==0.2.0
-sentence-transformers==3.3.1
+pypdf
+langchain
+langchain-core
+langchain-text-splitters
+langchain-chroma
+langchain-google-genai
+langchain-huggingface
+sentence-transformers
+chromadb
 
 # Schemas
-marshmallow==4.3.0
+marshmallow
