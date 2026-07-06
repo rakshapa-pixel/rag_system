@@ -3,19 +3,29 @@ import chromadb
 import pypdf
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_chroma import Chroma
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
 CHROMA_LOCAL_DIR = "/tmp/chroma_db"
-EMBED_MODEL = "all-MiniLM-L6-v2"
+EMBED_MODEL = "models/text-embedding-004"
 GEMINI_MODEL = "gemini-2.5-flash"
-INGEST_BATCH_SIZE = 500
+INGEST_BATCH_SIZE = 100
 
 _chroma_client = None
+_embeddings = None
+
+
+def _get_embeddings():
+    global _embeddings
+    if _embeddings is None:
+        _embeddings = GoogleGenerativeAIEmbeddings(
+            model=EMBED_MODEL,
+            google_api_key=os.environ.get("GEMINI_KEY")
+        )
+    return _embeddings
 
 
 def _get_chroma_client():
@@ -92,7 +102,7 @@ def clear_vectorstore(user_id):
 
 def build_vectorstore(chunks, user_id):
     client = _get_chroma_client()
-    embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
+    embeddings = _get_embeddings()
     collection_name = user_collection_name(user_id)
     total = len(chunks)
 
@@ -118,7 +128,7 @@ def build_vectorstore(chunks, user_id):
 
 def load_vectorstore(user_id):
     client = _get_chroma_client()
-    embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
+    embeddings = _get_embeddings()
     return Chroma(
         client=client,
         collection_name=user_collection_name(user_id),
