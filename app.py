@@ -3,11 +3,11 @@ import sys
 from flask import Flask, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-
 load_dotenv()
 
-# Allow OAuth over plain HTTP in development (disabled only when PRODUCTION=1)
-if not os.environ.get("PRODUCTION"):
+if os.environ.get("PRODUCTION"):
+    os.environ.pop("OAUTHLIB_INSECURE_TRANSPORT", None)
+else:
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 if not os.environ.get("GEMINI_KEY"):
@@ -21,14 +21,11 @@ from routes.auth import auth_bp
 from routes.documents import documents_bp
 from routes.query import query_bp
 
-
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-
     CORS(app, supports_credentials=True, origins=Config.CORS_ORIGINS)
     db.init_app(app)
-
     oauth.init_app(app)
     oauth.register(
         name="google",
@@ -37,10 +34,8 @@ def create_app():
         server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
         client_kwargs={"scope": "openid email profile"},
     )
-
     with app.app_context():
         db.create_all()
-
     app.register_blueprint(auth_bp)
     app.register_blueprint(documents_bp)
     app.register_blueprint(query_bp)
@@ -50,10 +45,6 @@ def create_app():
         return jsonify({"status": "ok"})
 
     return app
-
-
-app = create_app()
-
 
 app = create_app()
 

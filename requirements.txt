@@ -1,27 +1,16 @@
-# Web framework
 flask
 gunicorn
 flask-cors
 flask-sqlalchemy
 python-dotenv
 werkzeug
-
-# Database
 psycopg2-binary
-
-# OAuth
 authlib
-
-# RAG pipeline
 pypdf
 langchain
 langchain-core
 langchain-text-splitters
 langchain-chroma
 langchain-google-genai
-langchain-huggingface
-sentence-transformers
 chromadb
-
-# Schemas
 marshmallow
